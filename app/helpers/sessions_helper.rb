@@ -34,8 +34,17 @@ module SessionsHelper
       redirect_to(session[:return_to] || default)
       session.delete(:return_to)
     end
-
+  
+    # 在某个路径时发现没有登录，先保存这个路径，登录后返回
   def store_location
       session[:return_to] = request.fullpath
   end
+  
+  def signed_in_user
+    unless signed_in?
+           store_location
+           redirect_to signin_path, notice: "Please sign in."
+    end
+  end
+  
 end
