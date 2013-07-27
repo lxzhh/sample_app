@@ -7,7 +7,6 @@ class UsersController < ApplicationController
   def index
     # self.per_page = 10
     @users = User.paginate(:page => params[:page] ,:per_page => 20)
-   
   end
   
   
@@ -15,15 +14,20 @@ class UsersController < ApplicationController
     WillPaginate.per_page = p
   end
   
+  
+  
   def new
     @user = User.new
   end
   
+  
+  
   def show
-    
     @user = User.find(params[:id])
     @microposts = @user.microposts.paginate(page: params[:page])
   end
+  
+  
   
   def create
      @user = User.new(params[:user])
@@ -41,7 +45,8 @@ class UsersController < ApplicationController
   def edit
   end
 
-   def update
+
+  def update
      if @user.update_attributes(params[:user])
        flash[:success] = "Profile updated"
        sign_in @user
@@ -49,24 +54,41 @@ class UsersController < ApplicationController
      else
        render 'edit'
      end
-   end
+  end
   
-   def destroy
+  
+  
+  def destroy
      User.find(params[:id]).destroy
      flash[:success] = "User destroyed."
      redirect_to users_path
-   end
+  end
    
    
-   def feed
+  def feed
       # This is preliminary. See "Following users" for the full implementation.
-      Micropost.where("user_id = ?", id)
-   end
+      Micropost.from_users_followed_by(self)
+  end
     
     
+  def following
+    @title = "Following"
+    @user = User.find(params[:id])
+    @users = @user.followed_users.paginate(page: params[:page])
+    render 'show_follow'
+  end
+    
+    
+  def followers
+    @title = "followers"
+    @user = User.find(params[:id])
+    @users = @user.followers.paginate(page: params[:page])
+    render 'show_follow'
+  end
+  
+  
   private
-  
-  
+
   def correct_user
        @user = User.find(params[:id])
        redirect_to(root_path) unless current_user?(@user)
